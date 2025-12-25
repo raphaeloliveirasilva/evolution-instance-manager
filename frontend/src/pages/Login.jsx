@@ -32,8 +32,10 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-slate-800">Api</h1>
-          <p className="text-slate-500">Whatsapp Api</p>
+          <h1 className="text-3xl font-bold text-slate-800">
+            Evolution <span className="text-indigo-600">Manager</span>
+          </h1>
+          <p className="text-slate-500 mt-2">Gestão inteligente de instâncias</p>
         </header>
 
         <form onSubmit={handleLogin} className="space-y-5">
@@ -69,6 +71,11 @@ export default function Login() {
             {loading ? 'Entrando...' : 'Entrar no Painel'}
           </button>
         </form>
+        <footer className="mt-8 text-center">
+          <p className="text-xs text-slate-400">
+            Desenvolvido por <span className="font-semibold">Raphael Oliveira</span>
+          </p>
+        </footer>
       </div>
     </div>
   );
