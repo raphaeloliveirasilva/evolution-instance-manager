@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,17 +13,20 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
+    const toastId = toast.loading('Autenticando...');
     try {
       const response = await api.post('/login', { email, password });
-      
+      toast.success('Bem-vindo ao Evolution Manager!', { id: toastId, duration: 4000 });
       localStorage.setItem('@Genial:token', response.data.token);
       localStorage.setItem('@Genial:user', JSON.stringify(response.data.user));
 
       // Redireciona para o dashboard
       navigate('/dashboard');
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao entrar. Verifique suas credenciais.');
+    } catch (error) {
+      // Se deu erro:
+      const mensagemErro = error.response?.data?.error || 'Falha na conexão com o servidor';
+      toast.error(mensagemErro, { id: toastId });
+      console.error('Erro no login:', error);
     } finally {
       setLoading(false);
     }

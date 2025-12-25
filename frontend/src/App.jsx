@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -14,6 +15,18 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
+      <Toaster 
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          // Podemos definir um estilo padrão aqui se quiser
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#333',
+          },
+        }}
+      />
       <Routes>
         {/* Rota Pública: Login */}
         <Route path="/" element={<Login />} />
