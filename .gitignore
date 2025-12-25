@@ -1,0 +1,23 @@
+# Pastas de dependências
+node_modules/
+dist/
+.cache/
+
+# Arquivos de ambiente (SENSÍVEL)
+.env
+env-config.js
+
+# NÃO ignorar o exemplo
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# Docker
+.data/
+mysql_data/
+
+# OS
+.DS_Store
+Thumbs.db

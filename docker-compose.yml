@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_manager:/var/lib/mysql
+    networks:
+      - manager
+    healthcheck:
+      test: "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == poseidon #altere para o seu nó no swarm
+
+  backend:
+    image: raphaeloliveiraa/manager-back-evoapi:latest
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - APP_SECRET=${APP_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - EVOLUTION_URL=${EVOLUTION_URL}
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
+      - RUN_MIGRATIONS=${RUN_MIGRATIONS}
+      - RUN_SEEDS=${RUN_SEEDS}
+    networks:
+      - manager
+      - traefik_public
+    depends_on:
+      - db
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      placement:
+        constraints:
+          - node.hostname == poseidon
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.genial-api.rule=Host(`url-backend.com.br`)"
+        - "traefik.http.routers.genial-api.entrypoints=websecure"
+        - "traefik.http.routers.genial-api.tls.certresolver=myresolver"
+        - "traefik.http.services.genial-api.loadbalancer.server.port=3000"
+
+  frontend:
+    image: raphaeloliveiraa/manager-front-evoapi:latest
+    restart: always
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    networks:
+      - manager
+      - traefik_public
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == poseidon #altere para o seu nó no swarm
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.genial-app.rule=Host(`url-frontend.com.br`)"
+        - "traefik.http.routers.genial-app.entrypoints=websecure"
+        - "traefik.http.routers.genial-app.tls.certresolver=myresolver"
+        - "traefik.http.services.genial-app.loadbalancer.server.port=80"
+
+networks:
+  manager:
+    driver: overlay
+    attachable: true
+  traefik_public:
+    external: true
+
+volumes:
+  mysql_manager:

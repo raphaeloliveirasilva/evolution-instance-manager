@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: db_evolution
+    restart: always
+    environment:
+      MYSQL_DATABASE: evolution_manager
+      MYSQL_ROOT_PASSWORD: root # Troque por uma senha segura
+      MYSQL_USER: manager
+      MYSQL_PASSWORD: manager # Troque por uma senha segura
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_manager:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_manager:

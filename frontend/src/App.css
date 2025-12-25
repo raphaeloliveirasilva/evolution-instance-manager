@@ -1,0 +1,21 @@
+/* Importação da fonte caso não tenha colocado no index.html */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif !important;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Removemos o text-align center e as margens que limitam o tamanho da página */
+body {
+  margin: 0;
+  place-items: unset;
+  min-width: 100%;
+}
