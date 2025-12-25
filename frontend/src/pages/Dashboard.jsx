@@ -7,7 +7,7 @@ export default function Dashboard() {
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
   const [activeTab, setActiveTab] = useState('instances'); 
-  const currentUser = JSON.parse(localStorage.getItem('@Genial:user'));
+  const currentUser = JSON.parse(localStorage.getItem('@manager:user'));
   const navigate = useNavigate();
 
   // Estados para Modais
