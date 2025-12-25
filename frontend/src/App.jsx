@@ -7,7 +7,7 @@ import InstanceDetails from './pages/InstanceDetails';
 
 // Função simples para verificar se o usuário está logado
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('@Genial:token');
+  const token = localStorage.getItem('@manager:token');
   // Se não tiver token, manda de volta para o login
   return token ? children : <Navigate to="/" />;
 };
