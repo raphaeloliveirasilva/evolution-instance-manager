@@ -54,6 +54,21 @@ export default function Dashboard() {
     return instanceNameMatch || ownerNameMatch;
   });
 
+  // --- ESTADOS PARA SIDEBAR RETRÁTIL ---
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('@manager:sidebar-collapsed');
+    return saved === 'true'; // Inicializa com o valor salvo ou false
+  });
+
+  // Função para alternar e salvar no LocalStorage
+  const toggleSidebar = () => {
+    setIsCollapsed(prev => {
+      const newState = !prev;
+      localStorage.setItem('@manager:sidebar-collapsed', JSON.stringify(newState));
+      return newState;
+    });
+  };
+
   // --- 6. FUNÇÕES DE NAVEGAÇÃO E CARREGAMENTO ---
   const handleNavigation = (tab) => {
     setActiveTab(tab);
@@ -260,74 +275,139 @@ export default function Dashboard() {
         />
       )}
 
-
       {/* SIDEBAR */}
       <aside className={`
-      fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out
-      md:relative md:translate-x-0
-      ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-    `}>
-        {/* Adicionei 'flex justify-between items-center' para alinhar logo e botão */}
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+  fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-300 flex flex-col shadow-2xl transition-all duration-300 ease-in-out
+  
+  /* Comportamento Mobile: Largura fixa confortável e esconde totalmente */
+  w-[280px] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+  
+  /* Comportamento Desktop: Volta ao fluxo relativo e aplica largura dinâmica */
+  md:relative md:translate-x-0 
+  ${isCollapsed ? 'md:w-20' : 'md:w-72'}
+`}>
+        {/* CABEÇALHO DA SIDEBAR */}
+        <div className={`p-4 flex items-center mb-6 relative transition-all duration-300 ${isCollapsed ? 'md:justify-center' : 'justify-between'}`}>
 
-          {/* O Logo e o Texto ficam agrupados aqui */}
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              EvoManager
-            </h1>
-            <p className="text-[10px] text-slate-500 mt-1 capitalize tracking-widest font-medium">Gestão de instâncias</p>
+          {/* LOGO CONTAINER */}
+          <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'md:justify-center' : ''}`}>
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0 shadow-lg shadow-indigo-500/20">
+              E
+            </div>
+            {/* Texto da Logo: Esconde apenas no desktop quando colapsado */}
+            <div className={`animate-in fade-in slide-in-from-left-2 overflow-hidden whitespace-nowrap ${isCollapsed ? 'md:hidden' : 'block'}`}>
+              <h1 className="text-white font-bold text-lg leading-none">EvoManager</h1>
+              <p className="text-[10px] text-slate-500 font-medium">Gestão De Instâncias</p>
+            </div>
           </div>
 
-          {/* BOTÃO FECHAR (X) - Só aparece no celular (md:hidden) */}
+          {/* BOTÃO TOGGLE (Flutuante na Borda) - Apenas Desktop */}
           <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden text-slate-500 hover:text-white transition-colors"
+            onClick={toggleSidebar}
+            className={`hidden md:flex absolute items-center justify-center transition-all duration-300 z-[60] shadow-md hover:scale-110 active:scale-95
+        ${isCollapsed
+                ? '-right-4 top-7 w-8 h-8 rounded-full bg-indigo-600 text-white border-4 border-slate-50'
+                : 'right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white'
+              }`}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className={`w-4 h-4 transition-transform duration-500 ${isCollapsed ? 'rotate-180' : ''}`}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
             </svg>
           </button>
-
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        {/* NAVEGAÇÃO */}
+        <nav className={`flex-1 px-4 space-y-4 mt-4 flex flex-col transition-all duration-300 ${isCollapsed ? 'md:items-center md:px-2' : ''}`}>
           {/* Botão Instâncias */}
-          <button onClick={() => handleNavigation('instances')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition font-medium capitalize ${activeTab === 'instances' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-            Instâncias
+          <button
+            onClick={() => handleNavigation('instances')}
+            title={isCollapsed ? "Instâncias" : ""}
+            className={`flex items-center transition-all duration-300 font-medium capitalize group
+        ${activeTab === 'instances' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800 text-slate-400'}
+        w-full gap-3 p-3 rounded-xl
+        ${isCollapsed ? 'md:w-12 md:h-12 md:justify-center md:rounded-2xl md:p-0' : ''}
+      `}
+          >
+            <div className={`flex-shrink-0 flex items-center justify-center transition-transform duration-300 ${isCollapsed ? 'md:scale-110' : ''}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            <span className={`animate-in fade-in whitespace-nowrap ${isCollapsed ? 'md:hidden' : 'block'}`}>Instâncias</span>
           </button>
 
           {currentUser?.role === 'admin' && (
             <>
               {/* Botão Usuários */}
-              <button onClick={() => handleNavigation('users')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition font-medium capitalize ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800'}`}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                Usuários
+              <button
+                onClick={() => handleNavigation('users')}
+                title={isCollapsed ? "Usuários" : ""}
+                className={`flex items-center transition-all duration-300 font-medium capitalize group
+            ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800 text-slate-400'}
+            w-full gap-3 p-3 rounded-xl
+            ${isCollapsed ? 'md:w-12 md:h-12 md:justify-center md:rounded-2xl md:p-0' : ''}
+          `}
+              >
+                <div className={`flex-shrink-0 flex items-center justify-center transition-transform duration-300 ${isCollapsed ? 'md:scale-110' : ''}`}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <span className={`animate-in fade-in whitespace-nowrap ${isCollapsed ? 'md:hidden' : 'block'}`}>Usuários</span>
               </button>
+
               {/* Botão Planos */}
-              <button onClick={() => handleNavigation('plans')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition font-medium capitalize ${activeTab === 'plans' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800'}`}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                Planos
+              <button
+                onClick={() => handleNavigation('plans')}
+                title={isCollapsed ? "Planos" : ""}
+                className={`flex items-center transition-all duration-300 font-medium capitalize group
+            ${activeTab === 'plans' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800 text-slate-400'}
+            w-full gap-3 p-3 rounded-xl
+            ${isCollapsed ? 'md:w-12 md:h-12 md:justify-center md:rounded-2xl md:p-0' : ''}
+          `}
+              >
+                <div className={`flex-shrink-0 flex items-center justify-center transition-transform duration-300 ${isCollapsed ? 'md:scale-110' : ''}`}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <span className={`animate-in fade-in whitespace-nowrap ${isCollapsed ? 'md:hidden' : 'block'}`}>Planos</span>
               </button>
             </>
           )}
         </nav>
 
-        <div className="p-6 border-t border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 flex-shrink-0 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold border border-indigo-500/30">
-              {currentUser?.name?.substring(0, 2).toUpperCase()}
+        {/* RODAPÉ DINÂMICO */}
+        <div className={`mt-auto border-t border-slate-800 transition-all duration-300 ${isCollapsed ? 'md:p-2' : 'p-6'}`}>
+          <div className={`flex items-center ${isCollapsed ? 'md:flex-col md:gap-4 md:py-4' : 'justify-between'}`}>
+            <div className={`flex items-center gap-3 ${isCollapsed ? 'md:flex-col' : ''}`}>
+              <div className="w-10 h-10 flex-shrink-0 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold border border-indigo-500/30">
+                {currentUser?.name?.substring(0, 2).toUpperCase()}
+              </div>
+              <div className={`flex flex-col min-w-0 animate-in fade-in duration-300 ${isCollapsed ? 'md:hidden' : 'block'}`}>
+                <span className="text-sm font-semibold text-slate-200 truncate w-32 uppercase">{currentUser?.name}</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{currentUser?.role}</span>
+              </div>
             </div>
-            <span className="text-sm font-semibold text-slate-200 truncate w-32">{currentUser?.name}</span>
+            <button
+              onClick={handleLogout}
+              title={isCollapsed ? "Sair" : ""}
+              className={`transition-colors ${isCollapsed ? 'md:p-3 md:bg-slate-800 md:rounded-xl text-slate-500 hover:text-red-400' : 'text-slate-500 hover:text-red-400'}`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
-          <button onClick={handleLogout} className="text-slate-500 hover:text-red-400">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-          </button>
         </div>
       </aside>
 
+
       {/* Alterei o padding para p-6 no celular e md:p-10 no PC */}
-      <main className="flex-1 h-screen overflow-y-auto p-6 md:p-10">
+      <main className="flex-1 h-screen overflow-y-auto p-6 md:p-10 transition-all duration-300 ease-in-out">
 
         {/* CABEÇALHO MOBILE (Botão Menu + Título) */}
         <div className="md:hidden flex items-center gap-4 mb-8">
