@@ -22,7 +22,12 @@ export default function Dashboard() {
     setIsSidebarOpen(false);
   };
 
-
+  const [userSearchTerm, setUserSearchTerm] = useState(''); // Busca específica para a tabela de usuários
+  // Filtra os usuários baseado no termo de busca (Nome ou Email)
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+  );
 
   // Estados para Criação/Edição
   const [newInstanceName, setNewInstanceName] = useState('');
@@ -411,48 +416,136 @@ export default function Dashboard() {
         {/* ABA USUÁRIOS */}
         {activeTab === 'users' && currentUser?.role === 'admin' && (
           <section className="animate-in fade-in duration-500">
-            <header className="flex justify-between items-center mb-12">
+            <header className="flex justify-between items-end mb-8">
               <div>
                 <h2 className="text-3xl font-bold text-slate-800">Gestão de usuários</h2>
-                <p className="text-slate-500 mt-1">Cadastre e gerencie seus clientes.</p>
+                <p className="text-slate-500 mt-1">Gerencie os acessos e planos dos seus clientes.</p>
               </div>
-              <button onClick={() => { setEditingUser(null); setNewUserData({ name: '', email: '', password: '', plan_id: '' }); setIsUserModalOpen(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg">Novo usuário</button>
+              <button
+                onClick={() => {
+                  setEditingUser(null);
+                  setNewUserData({ name: '', email: '', password: '', plan_id: '', role: 'user' });
+                  setIsUserModalOpen(true);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-100 transition-all active:scale-95"
+              >
+                Novo usuário
+              </button>
             </header>
-            <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+
+            {/* BARRA DE PESQUISA INTEGRADA */}
+            <div className="relative mb-6">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar por nome ou e-mail..."
+                className="w-full bg-white border border-slate-200 py-4 pl-12 pr-4 rounded-2xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all text-slate-600 shadow-sm"
+                value={userSearchTerm}
+                onChange={(e) => setUserSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* CONTAINER DA TABELA COM ARREDONDAMENTO SUAVIZADO (rounded-2xl) */}
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
               <table className="w-full text-left">
-                <thead className="bg-slate-50 border-b">
+                <thead className="bg-slate-50/50 border-b border-slate-100">
                   <tr>
-                    <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase">Nome / Email</th>
-                    <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase text-center">Plano</th>
-                    <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase text-right">Ações</th>
+                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome / Email</th>
+                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Plano</th>
+                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {users.map(user => (
-                    <tr key={user.id} className="hover:bg-slate-50/50 transition-colors text-slate-700 font-medium">
+                <tbody className="divide-y divide-slate-50">
+                  {/* MAPEANDO OS USUÁRIOS FILTRADOS PELA BUSCA */}
+                  {filteredUsers.map(user => (
+                    <tr
+                      key={user.id}
+                      className="group border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-all duration-200"
+                    >
+                      {/* COLUNA 1: AVATAR + NOME + CARGO (Mantido intacto) */}
                       <td className="px-8 py-5">
-                        <p className="font-bold">{user.name}</p>
-                        <p className="text-xs text-slate-400">{user.email}</p>
+                        <div className="flex items-center gap-4">
+                          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm shadow-sm group-hover:scale-105 transition-transform duration-200 border border-indigo-200/50">
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-700 group-hover:text-indigo-600 transition-colors duration-200">
+                                {user.name}
+                              </span>
+                              <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border ${user.role === 'admin'
+                                ? 'bg-purple-50 text-purple-600 border-purple-100'
+                                : 'bg-slate-50 text-slate-400 border-slate-100'
+                                }`}>
+                                {user.role === 'admin' ? 'Admin' : 'User'}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-slate-400 font-medium">
+                              {user.email}
+                            </span>
+                          </div>
+                        </div>
                       </td>
+
+                      {/* COLUNA 2: PLANOS (Mantido intacto) */}
                       <td className="px-8 py-5 text-center">
-                        <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-tight">
+                        <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-tight border ${user.subscription?.plan?.name?.toLowerCase().includes('ouro')
+                          ? 'bg-amber-50 text-amber-600 border-amber-200'
+                          : user.subscription?.plan?.name?.toLowerCase().includes('prata')
+                            ? 'bg-slate-100 text-slate-600 border-slate-300'
+                            : user.subscription?.plan?.name?.toLowerCase().includes('bronze')
+                              ? 'bg-orange-50 text-orange-700 border-orange-200'
+                              : 'bg-indigo-50 text-indigo-600 border-indigo-200'
+                          }`}>
                           {user.subscription?.plan?.name || '---'}
                         </span>
                       </td>
-                      <td className="px-8 py-5 text-right flex justify-end gap-2">
-                        {/* AJUSTE AQUI: Chamando a função para editar usuário */}
-                        <button onClick={() => openEditUserModal(user)} className="p-2 text-slate-400 hover:text-indigo-600 transition">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
-                        {/* AJUSTE AQUI: Chamando a função para excluir usuário */}
-                        <button onClick={() => handleDeleteUser(user.id)} className="p-2 text-slate-400 hover:text-red-500 transition">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
+
+                      {/* COLUNA 3: AÇÕES (Mantido intacto) */}
+                      <td className="px-8 py-5">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => openEditUserModal(user)}
+                            className="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 active:scale-90"
+                            title="Editar Usuário"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 active:scale-90"
+                            title="Excluir Usuário"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+
+              {/* MENSAGEM DE BUSCA VAZIA */}
+              {filteredUsers.length === 0 && (
+                <div className="py-20 text-center">
+                  <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-slate-400 font-medium">Nenhum usuário encontrado para "{userSearchTerm}"</p>
+                </div>
+              )}
             </div>
           </section>
         )}
