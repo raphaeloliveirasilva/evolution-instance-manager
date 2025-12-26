@@ -7,8 +7,8 @@ module.exports = {
     try {
       const users = await User.findAll({
         attributes: ['id', 'name', 'email', 'role', 'createdAt'],
-        include: [{ 
-          model: Subscription, 
+        include: [{
+          model: Subscription,
           as: 'subscription',
           include: [{ model: Plan, as: 'plan', attributes: ['name', 'id'] }] // Adicionado id do plano
         }],
@@ -33,9 +33,19 @@ module.exports = {
         await t.rollback();
         return res.status(400).json({ error: 'E-mail já cadastrado.' });
       }
-      
-      const user = await User.create({ name, email, password, role: role || 'user' }, { transaction: t });
-      
+
+      // Buscamos o usuário que está logado (quem faz a requisição)
+      const requestUser = await User.findByPk(req.userId);
+
+      // Só aceitamos o 'role' vindo do body se quem estiver criando for um 'admin'
+      // Caso contrário, forçamos sempre para 'user'
+      const finalRole = (requestUser && requestUser.role === 'admin') ? (role || 'user') : 'user';
+
+      const user = await User.create(
+        { name, email, password, role: finalRole },
+        { transaction: t }
+      );
+
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
 
@@ -89,15 +99,15 @@ module.exports = {
 
             if (instanceCount > newPlan.max_instances) {
               await t.rollback();
-              return res.status(400).json({ 
-                error: `O usuário possui ${instanceCount} instâncias, mas o plano ${newPlan.name} permite apenas ${newPlan.max_instances}.` 
+              return res.status(400).json({
+                error: `O usuário possui ${instanceCount} instâncias, mas o plano ${newPlan.name} permite apenas ${newPlan.max_instances}.`
               });
             }
 
             await user.subscription.update({ plan_id: Number(plan_id) }, { transaction: t });
             console.log(`✅ Assinatura do usuário ${id} atualizada para o plano ${newPlan.name}`);
           }
-        } 
+        }
         // Caso 2: O usuário NÃO TEM assinatura (Usuários de Seeder ou erros de sistema)
         else {
           const expiryDate = new Date();
@@ -115,10 +125,10 @@ module.exports = {
 
       // --- LÓGICA DE DADOS DO USUÁRIO ---
       const updateData = { name, email, role };
-      
+
       // Só altera a senha se o campo não estiver vazio
       if (password && password.trim() !== "") {
-        updateData.password = password; 
+        updateData.password = password;
       }
 
       await user.update(updateData, { transaction: t });
@@ -166,7 +176,7 @@ module.exports = {
 
     } catch (error) {
       if (t) await t.rollback();
-      console.error("ERRO NA EXCLUSÃO:", error); 
+      console.error("ERRO NA EXCLUSÃO:", error);
       return res.status(500).json({ error: 'Erro interno ao excluir usuário.' });
     }
   }
