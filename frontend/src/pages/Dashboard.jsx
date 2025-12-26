@@ -10,50 +10,62 @@ export default function Dashboard() {
   const currentUser = JSON.parse(localStorage.getItem('@manager:user'));
   const navigate = useNavigate();
 
-  // Estados para Modais
+  // --- 1. ESTADOS PARA MODAIS ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleNavigation = (tab) => {
-    setActiveTab(tab);
-    setIsSidebarOpen(false);
-  };
+  // --- 2. ESTADOS PARA BUSCA E FILTROS ---
+  const [userSearchTerm, setUserSearchTerm] = useState(''); // Busca na tabela de usuários
+  const [instanceSearchTerm, setInstanceSearchTerm] = useState(''); // Busca na grid de instâncias
+  const [searchTerm, setSearchTerm] = useState(''); // Busca de usuários NO DROPDOWN do modal
 
-  const [userSearchTerm, setUserSearchTerm] = useState(''); // Busca específica para a tabela de usuários
-  // Filtra os usuários baseado no termo de busca (Nome ou Email)
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
-  );
-
-  // Estados para Criação/Edição
+  // --- 3. ESTADOS PARA CRIAÇÃO / EDIÇÃO ---
   const [newInstanceName, setNewInstanceName] = useState('');
   const [selectedOwnerId, setSelectedOwnerId] = useState('');
-  const [searchTerm, setSearchTerm] = useState(''); // Texto digitado
-  const [showDropdown, setShowDropdown] = useState(false); // Controla visibilidade
+  const [showDropdown, setShowDropdown] = useState(false);
   const [newUserData, setNewUserData] = useState({ name: '', email: '', password: '', plan_id: '', role: 'user' });
   const [newPlanData, setNewPlanData] = useState({ name: '', max_instances: '', price: '' });
   const [editingPlan, setEditingPlan] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
 
-  // Estados de Interface e Conexão
+  // --- 4. ESTADOS DE INTERFACE E CONEXÃO ---
   const [selectedInstance, setSelectedInstance] = useState(null);
   const [qrCode, setQrCode] = useState('');
   const [isQrLoading, setIsQrLoading] = useState(false);
   const [visibleTokens, setVisibleTokens] = useState({});
 
+  // --- 5. LÓGICAS DE FILTRO (Sempre após os UseStates) ---
+
+  // Filtra os usuários baseado no termo de busca (Nome ou Email)
+  const filteredUsers = (users || []).filter(user =>
+    user.name?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
+  );
+
+  // Filtra as instâncias baseado no nome da instância OU no nome do dono
+  const filteredInstances = (instances || []).filter(instance => {
+    const term = instanceSearchTerm.toLowerCase();
+    const instanceNameMatch = instance.name?.toLowerCase().includes(term);
+    const ownerNameMatch = instance.owner?.name?.toLowerCase().includes(term);
+
+    return instanceNameMatch || ownerNameMatch;
+  });
+
+  // --- 6. FUNÇÕES DE NAVEGAÇÃO E CARREGAMENTO ---
+  const handleNavigation = (tab) => {
+    setActiveTab(tab);
+    setIsSidebarOpen(false);
+  };
+
   useEffect(() => {
     if (activeTab === 'instances') {
-
       loadInstances();
-      // para preencher o "select" no modal de nova instância.
       if (currentUser?.role === 'admin') {
         loadUsers();
       }
-
     }
 
     if (activeTab === 'users' && currentUser?.role === 'admin') {
@@ -65,6 +77,8 @@ export default function Dashboard() {
       loadPlans();
     }
   }, [activeTab]);
+
+  // ... (restante das suas funções loadInstances, loadUsers, etc)
 
   // --- CARREGAMENTO ---
   async function loadInstances() {
@@ -333,15 +347,19 @@ export default function Dashboard() {
         {/* ABA INSTÂNCIAS */}
         {activeTab === 'instances' && (
           <section className="animate-in fade-in duration-500">
-
-            {/* --- CABEÇALHO RESPONSIVO (CORRIGIDO) --- */}
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 gap-4">
+            {/* --- CABEÇALHO --- */}
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-slate-800">Instâncias</h2>
                 <p className="text-slate-500 mt-1 text-sm md:text-base">Gerencie suas conexões e veja os números ativos.</p>
               </div>
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setNewInstanceName('');
+                  setSelectedOwnerId('');
+                  setSearchTerm(''); // Limpa a busca do DROPDOWN do modal
+                  setIsModalOpen(true);
+                }}
                 className="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -351,9 +369,26 @@ export default function Dashboard() {
               </button>
             </header>
 
+            {/* --- BARRA DE PESQUISA (Ajustada para instanceSearchTerm) --- */}
+            <div className="relative mb-8">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar por instância ou nome do dono..."
+                className="w-full bg-white border border-slate-200 py-4 pl-12 pr-4 rounded-2xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all text-slate-600 shadow-sm"
+                value={instanceSearchTerm}
+                onChange={(e) => setInstanceSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* --- GRID DE CARDS --- */}
             <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-              {instances.map(instance => (
-                <div key={instance.id} className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 hover:border-indigo-400 transition-all group">
+              {filteredInstances?.map(instance => (
+                <div key={instance.id} className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hover:border-indigo-400 transition-all group text-slate-800">
                   <div className="flex justify-between items-start mb-6">
                     <div className="flex flex-col">
                       <h3 className="font-bold text-xl text-slate-800 tracking-tight leading-none">{instance.name}</h3>
@@ -379,7 +414,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className={`mb-4 p-4 rounded-2xl flex items-center gap-4 border transition-all ${instance.number ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
-                    <div className="w-14 h-14 rounded-full overflow-hidden bg-white border border-slate-200">
+                    <div className="w-14 h-14 rounded-full overflow-hidden bg-white border border-slate-200 flex-shrink-0">
                       {instance.profile_picture ? <img src={instance.profile_picture} className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300"><svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg></div>}
                     </div>
                     <div>
@@ -388,13 +423,13 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="bg-slate-50 p-4 rounded-2xl mb-8 border border-slate-100">
+                  <div className="bg-slate-50 p-4 rounded-2xl mb-8 border border-slate-100 text-slate-800">
                     <label className="text-[9px] uppercase font-bold text-slate-400 block mb-1">Token da Instância</label>
-                    <div className="flex justify-between items-center gap-2 overflow-hidden">
+                    <div className="flex justify-between items-center gap-2 overflow-hidden text-slate-800">
                       <code className="text-xs text-indigo-600 font-mono truncate">{visibleTokens[instance.id] ? instance.token : '••••••••••••••••••••'}</code>
                       <div className="flex gap-1">
-                        <button onClick={() => toggleTokenVisibility(instance.id)} className="p-1 text-slate-300 hover:text-indigo-600 transition-colors">{visibleTokens[instance.id] ? '🙈' : '👁️'}</button>
-                        <button onClick={() => { navigator.clipboard.writeText(instance.token); alert('Copiado!') }} className="p-1 text-slate-300 hover:text-indigo-600 transition-colors">📄</button>
+                        <button type="button" onClick={() => toggleTokenVisibility(instance.id)} className="p-1 text-slate-300 hover:text-indigo-600 transition-colors">{visibleTokens[instance.id] ? '🙈' : '👁️'}</button>
+                        <button type="button" onClick={() => { navigator.clipboard.writeText(instance.token); alert('Copiado!') }} className="p-1 text-slate-300 hover:text-indigo-600 transition-colors">📄</button>
                       </div>
                     </div>
                   </div>
@@ -405,11 +440,33 @@ export default function Dashboard() {
                     ) : (
                       <button onClick={() => handleConnect(instance)} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl text-sm font-bold hover:bg-slate-800 transition shadow-md">Conectar</button>
                     )}
-                    <button onClick={() => handleDeleteInstance(instance.id)} className="px-5 bg-red-50 text-red-500 rounded-2xl border border-red-100"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                    <button onClick={() => handleDeleteInstance(instance.id)} className="px-5 bg-red-50 text-red-500 rounded-2xl border border-red-100 transition-colors hover:bg-red-100">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* FEEDBACK CASO NÃO HAJA RESULTADOS */}
+            {filteredInstances?.length === 0 && instanceSearchTerm && (
+              <div className="py-20 text-center animate-in zoom-in duration-300">
+                <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <p className="text-slate-400 font-medium">Nenhuma instância encontrada para "{instanceSearchTerm}"</p>
+                <button
+                  onClick={() => setInstanceSearchTerm('')}
+                  className="mt-2 text-indigo-600 text-sm font-bold hover:underline"
+                >
+                  Limpar busca
+                </button>
+              </div>
+            )}
           </section>
         )}
 
