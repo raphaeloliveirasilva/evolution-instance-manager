@@ -46,13 +46,30 @@ module.exports = {
 
   // Criar Instância
   async store(req, res) {
-    const { name } = req.body; 
-    const userId = req.userId; 
+    // 1. Agora aceitamos owner_id (opcional) no body
+    const { name, owner_id } = req.body; 
+    const userId = req.userId; // Quem está fazendo a requisição (Admin ou User comum)
 
     try {
       const user = await User.findByPk(userId);
+      
+      // 2. Definimos quem será o dono da instância. Por padrão, é quem está logado.
+      let finalOwnerId = userId;
 
-      if (user.role !== 'admin') {
+      // 3. Lógica de Permissão
+      if (user.role === 'admin') {
+        // Se for Admin E tiver enviado um ID de outro usuário, aceitamos.
+        if (owner_id) {
+          const targetUser = await User.findByPk(owner_id);
+          if (!targetUser) {
+            return res.status(404).json({ error: 'Usuário destinatário não encontrado.' });
+          }
+          finalOwnerId = owner_id;
+        }
+        // Nota: Admins pulam a verificação de limite de planos (bypass)
+      } else {
+        // --- SE NÃO FOR ADMIN (Mantemos a lógica original de limites) ---
+        
         const subscription = await Subscription.findOne({
           where: { user_id: userId, status: 'active' },
           include: [{ model: Plan, as: 'plan' }]
@@ -71,6 +88,7 @@ module.exports = {
         }
       }
 
+      // 4. Criação na Evolution API (Mantido igual)
       try {
         const response = await axios.post(
           `${process.env.EVOLUTION_URL}/instance/create`,
@@ -95,13 +113,13 @@ module.exports = {
             throw new Error('A Evolution API não retornou um token válido.');
         }
 
+        // 5. Salvar no Banco (Usando finalOwnerId)
         const newInstance = await Instance.create({
           name: name,
           token: instanceToken, 
           status: 'disconnected', 
-          owner_id: userId,
+          owner_id: finalOwnerId, // <--- AQUI ESTÁ A MUDANÇA PRINCIPAL
           number: null,
-          // AJUSTE: Salva um valor padrão inicial para não vir nulo
           settings: JSON.stringify({ rejectCall: false, groupsIgnore: false, alwaysOnline: false })
         });
 
@@ -115,6 +133,7 @@ module.exports = {
       }
 
     } catch (error) {
+      console.error(error); // Bom logar o erro para debug
       return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
   },
