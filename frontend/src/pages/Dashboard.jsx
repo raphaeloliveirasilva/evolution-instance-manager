@@ -29,7 +29,7 @@ export default function Dashboard() {
   const [selectedOwnerId, setSelectedOwnerId] = useState('');
   const [searchTerm, setSearchTerm] = useState(''); // Texto digitado
   const [showDropdown, setShowDropdown] = useState(false); // Controla visibilidade
-  const [newUserData, setNewUserData] = useState({ name: '', email: '', password: '', plan_id: '' });
+  const [newUserData, setNewUserData] = useState({ name: '', email: '', password: '', plan_id: '', role: 'user' });
   const [newPlanData, setNewPlanData] = useState({ name: '', max_instances: '', price: '' });
   const [editingPlan, setEditingPlan] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
@@ -190,7 +190,8 @@ export default function Dashboard() {
       name: user.name,
       email: user.email,
       password: '',
-      plan_id: user.subscription?.plan?.id || user.subscription?.plan_id || ''
+      plan_id: user.subscription?.plan?.id || user.subscription?.plan_id || '',
+      role: user.role
     });
     setIsUserModalOpen(true);
   }
@@ -528,25 +529,58 @@ export default function Dashboard() {
       {isUserModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-slate-800">
           <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 className="text-2xl font-bold mb-6">{editingUser ? 'Editar cliente' : 'Cadastrar cliente'}</h3>
+            <h3 className="text-2xl font-bold mb-6">
+              {editingUser ? 'Editar usuário' : 'Cadastrar novo usuário'}
+            </h3>
+
             <form onSubmit={handleSaveUser} className="space-y-4">
-              <input type="text" placeholder="Nome" required className="w-full border p-4 rounded-2xl outline-none" value={newUserData.name} onChange={e => setNewUserData({ ...newUserData, name: e.target.value })} />
-              <input type="email" placeholder="Email" required className="w-full border p-4 rounded-2xl outline-none" value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })} />
-              <input
-                type="password"
-                placeholder={editingUser ? "Deixe em branco para não alterar" : "Senha"}
-                required={!editingUser}
-                className="w-full border p-4 rounded-2xl outline-none"
-                value={newUserData.password}
-                onChange={e => setNewUserData({ ...newUserData, password: e.target.value })}
-              />
-              <select required className="w-full border p-4 rounded-2xl bg-slate-50 outline-none" value={newUserData.plan_id} onChange={e => setNewUserData({ ...newUserData, plan_id: e.target.value })}>
-                <option value="">Selecione um plano</option>
-                {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
+              {/* Grupo Principal: Duas colunas no desktop */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="md:col-span-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Nome Completo</label>
+                  <input type="text" placeholder="Ex: João Silva" required className="w-full border p-4 rounded-2xl outline-none focus:border-indigo-500" value={newUserData.name} onChange={e => setNewUserData({ ...newUserData, name: e.target.value })} />
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">E-mail</label>
+                  <input type="email" placeholder="joao@email.com" required className="w-full border p-4 rounded-2xl outline-none focus:border-indigo-500" value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })} />
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Senha</label>
+                  <input
+                    type="password"
+                    placeholder={editingUser ? "Manter atual" : "Definir senha"}
+                    required={!editingUser}
+                    className="w-full border p-4 rounded-2xl outline-none focus:border-indigo-500"
+                    value={newUserData.password}
+                    onChange={e => setNewUserData({ ...newUserData, password: e.target.value })}
+                  />
+                </div>
+
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Nível de Acesso</label>
+                  <select required className="w-full bg-transparent outline-none text-sm text-slate-700 font-medium" value={newUserData.role} onChange={e => setNewUserData({ ...newUserData, role: e.target.value })}>
+                    <option value="user">Usuário Comum</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Plano</label>
+                  <select required className="w-full bg-transparent outline-none text-sm text-slate-700 font-medium" value={newUserData.plan_id} onChange={e => setNewUserData({ ...newUserData, plan_id: e.target.value })}>
+                    <option value="">Selecionar...</option>
+                    {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-6">
                 <button type="button" onClick={() => { setIsUserModalOpen(false); setEditingUser(null); }} className="flex-1 text-slate-400 font-bold">Cancelar</button>
-                <button type="submit" className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg">{editingUser ? 'Salvar alterações' : 'Criar Conta'}</button>
+                <button type="submit" className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg">
+                  {editingUser ? 'Salvar Alterações' : 'Criar Conta'}
+                </button>
               </div>
             </form>
           </div>
