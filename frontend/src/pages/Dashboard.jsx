@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import SettingsContent from '../components/SettingsContent';
 
 export default function Dashboard() {
   const [instances, setInstances] = useState([]);
@@ -376,6 +377,26 @@ export default function Dashboard() {
                 </div>
                 <span className={`animate-in fade-in whitespace-nowrap ${isCollapsed ? 'md:hidden' : 'block'}`}>Planos</span>
               </button>
+
+              {/* botão configurações */}
+              <button
+                onClick={() => handleNavigation('settings')}
+                title={isCollapsed ? "Configurações" : ""}
+                className={`flex items-center transition-all duration-300 font-medium capitalize group
+    ${activeTab === 'settings' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800 text-slate-400'}
+    w-full gap-3 p-3 rounded-xl
+    ${isCollapsed ? 'md:w-12 md:h-12 md:justify-center md:rounded-2xl md:p-0' : ''}
+  `}
+              >
+                <div className={`flex-shrink-0 flex items-center justify-center transition-transform duration-300 ${isCollapsed ? 'md:scale-110' : ''}`}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <span className={`animate-in fade-in whitespace-nowrap ${isCollapsed ? 'md:hidden' : 'block'}`}>Configurações</span>
+              </button>
+
             </>
           )}
         </nav>
@@ -726,6 +747,21 @@ export default function Dashboard() {
             </div>
           </section>
         )}
+
+        {/* ABA CONFIGURAÇÕES */}
+        {activeTab === 'settings' && currentUser?.role === 'admin' && (
+          <section className="animate-in fade-in duration-500">
+            <header className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-800">Configurações do Sistema</h2>
+              <p className="text-slate-500 mt-1 text-sm md:text-base">Gerencie chaves e preferências globais.</p>
+            </header>
+
+            <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200">
+              <SettingsContent />
+            </div>
+          </section>
+        )}
+
       </main>
 
       {/* MODAL PLANO */}

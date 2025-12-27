@@ -5,28 +5,30 @@ const User = require('./User');
 const Plan = require('./Plan');
 const Subscription = require('./Subscription');
 const Instance = require('./Instance');
-// const GlobalConfig = require('./GlobalConfig'); // Descomente se já criou este arquivo
+const Setting = require('./Setting'); // <--- 1. Importar o arquivo
 
 const connection = new Sequelize(dbConfig);
 
-// 1. Inicializa os models
+// 2. Inicializa os models
 User.init(connection);
 Plan.init(connection);
 Subscription.init(connection);
 Instance.init(connection);
-// GlobalConfig.init(connection);
+Setting.init(connection); // <--- 2. Iniciar o Model na conexão
 
-// 2. Executa as associações
+// 3. Executa as associações
 User.associate(connection.models);
 Plan.associate(connection.models);
 Subscription.associate(connection.models);
 Instance.associate(connection.models);
+Setting.associate(connection.models); // <--- (Opcional, mas bom manter o padrão)
 
-// CORREÇÃO AQUI: Exportamos um objeto com tudo
+// 4. Exportar
 module.exports = {
   connection, 
   User,
   Plan,
   Subscription,
-  Instance
+  Instance,
+  Setting // <--- 3. Exportar para o Controller usar
 };

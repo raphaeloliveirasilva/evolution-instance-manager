@@ -4,10 +4,10 @@ const AuthController = require('./controllers/AuthController');
 const PlanController = require('./controllers/PlanController'); 
 const SubscriptionController = require('./controllers/SubscriptionController');
 const InstanceController = require('./controllers/InstanceController');
-
+const SettingsController = require('./controllers/SettingsController'); // <--- 1. Importação nova
 
 const authMiddleware = require('./middlewares/auth'); 
-const isAdmin = require('./middlewares/isAdmin'); // <--- Importando o middleware de segurança
+const isAdmin = require('./middlewares/isAdmin'); 
 
 const routes = express.Router();
 
@@ -16,24 +16,28 @@ routes.get('/', (req, res) => {
 });
 
 // --- ROTAS PÚBLICAS ---
-// Removida a rota de cadastro público (UserController.store)
-routes.post('/login', AuthController.store); // Login continua público
+routes.post('/login', AuthController.store); 
 
 // --- ROTAS PRIVADAS (Requer Token) ---
 routes.use(authMiddleware);
 
 // --- GESTÃO ADMINISTRATIVA (Apenas Admin) ---
-// Agora a criação de usuários e planos exige que o logado seja Admin
+// Configurações do Sistema (NOVO)
+routes.get('/settings', isAdmin, SettingsController.index);  // <--- 2. Rota para ler
+routes.put('/settings', isAdmin, SettingsController.update); // <--- 2. Rota para salvar
+
 routes.get('/users', isAdmin, UserController.index);
 routes.post('/users', isAdmin, UserController.store);
 routes.put('/users/:id', isAdmin, UserController.update);
+routes.delete('/users/:id', isAdmin, UserController.delete);
+
 routes.post('/plans', isAdmin, PlanController.store);
 routes.put('/plans/:id', isAdmin, PlanController.update);
 routes.delete('/plans/:id', isAdmin, PlanController.delete);
-routes.delete('/users/:id', isAdmin, UserController.delete);
+
 
 // --- FUNCIONALIDADES DE USUÁRIO (Qualquer um logado) ---
-// Ver planos (Útil para o Admin listar no formulário de criação)
+// Ver planos
 routes.get('/plans', PlanController.index);
 
 // Assinaturas
