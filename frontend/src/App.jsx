@@ -19,7 +19,6 @@ function App() {
         position="top-right"
         reverseOrder={false}
         toastOptions={{
-          // Podemos definir um estilo padrão aqui se quiser
           duration: 4000,
           style: {
             background: '#fff',
@@ -31,7 +30,9 @@ function App() {
         {/* Rota Pública: Login */}
         <Route path="/" element={<Login />} />
 
-        {/* Rota Privada: Dashboard (Protegida) */}
+        {/* --- ROTAS PRIVADAS --- */}
+        
+        {/* Dashboard Principal */}
         <Route 
           path="/dashboard" 
           element={
@@ -41,6 +42,7 @@ function App() {
           } 
         />
 
+        {/* Detalhes da Instância */}
         <Route 
           path="/instances/:id" 
           element={
