@@ -7,6 +7,7 @@ import PlanModal from '../components/modals/PlanModal';
 import UserModal from '../components/modals/UserModal';
 import InstanceModal from '../components/modals/InstanceModal';
 import ConnectModal from '../components/modals/ConnectModal';
+import InstanceCard from '../components/InstanceCard';
 
 export default function Dashboard() {
   const [instances, setInstances] = useState([]);
@@ -354,68 +355,21 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* --- GRID DE CARDS --- */}
+            {/* GRID DE CARDS REFATORADO */}
             <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
               {filteredInstances?.map(instance => (
-                <div key={instance.id} className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hover:border-indigo-400 transition-all group text-slate-800">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex flex-col">
-                      <h3 className="font-bold text-xl text-slate-800 tracking-tight leading-none">{instance.name}</h3>
-                      {currentUser?.role === 'admin' && instance.owner && (
-                        <p className="text-sm text-indigo-500 font-bold flex items-center gap-2 mt-3 capitalize">
-                          dono: {instance.owner.name}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => navigate(`/instances/${instance.id}`)} className="p-2 bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                      </button>
-                      <button onClick={() => handleCheckStatus(instance.id)} className="p-2 bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-6">
-                    <span className={`w-2.5 h-2.5 rounded-full ${instance.status === 'connected' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                    <span className="text-[10px] font-bold capitalize text-slate-400 uppercase">{instance.status}</span>
-                  </div>
-
-                  <div className={`mb-4 p-4 rounded-2xl flex items-center gap-4 border transition-all ${instance.number ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
-                    <div className="w-14 h-14 rounded-full overflow-hidden bg-white border border-slate-200 flex-shrink-0">
-                      {instance.profile_picture ? <img src={instance.profile_picture} className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300"><svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg></div>}
-                    </div>
-                    <div>
-                      <p className={`text-[10px] font-bold uppercase ${instance.number ? 'text-emerald-600' : 'text-slate-400'}`}>{instance.number ? 'Ativo' : 'Pendente'}</p>
-                      <p className="text-sm font-bold text-slate-700">+{instance.number || '---'}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-2xl mb-8 border border-slate-100 text-slate-800">
-                    <label className="text-[9px] uppercase font-bold text-slate-400 block mb-1">Token da Instância</label>
-                    <div className="flex justify-between items-center gap-2 overflow-hidden text-slate-800">
-                      <code className="text-xs text-indigo-600 font-mono truncate">{visibleTokens[instance.id] ? instance.token : '••••••••••••••••••••'}</code>
-                      <div className="flex gap-1">
-                        <button type="button" onClick={() => toggleTokenVisibility(instance.id)} className="p-1 text-slate-300 hover:text-indigo-600 transition-colors">{visibleTokens[instance.id] ? '🙈' : '👁️'}</button>
-                        <button type="button" onClick={() => { navigator.clipboard.writeText(instance.token); alert('Copiado!') }} className="p-1 text-slate-300 hover:text-indigo-600 transition-colors">📄</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    {instance.status === 'connected' ? (
-                      <button onClick={() => handleLogoutInstance(instance.id)} className="flex-1 bg-red-500 text-white py-4 rounded-2xl text-sm font-bold hover:bg-red-600 transition shadow-md">Desconectar</button>
-                    ) : (
-                      <button onClick={() => handleConnect(instance)} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl text-sm font-bold hover:bg-slate-800 transition shadow-md">Conectar</button>
-                    )}
-                    <button onClick={() => handleDeleteInstance(instance.id)} className="px-5 bg-red-50 text-red-500 rounded-2xl border border-red-100 transition-colors hover:bg-red-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+                <InstanceCard
+                  key={instance.id}
+                  instance={instance}
+                  currentUser={currentUser}
+                  onNavigate={navigate}
+                  onCheckStatus={handleCheckStatus}
+                  onLogout={handleLogoutInstance}
+                  onConnect={handleConnect}
+                  onDelete={handleDeleteInstance}
+                  toggleTokenVisibility={toggleTokenVisibility}
+                  isVisible={visibleTokens[instance.id]}
+                />
               ))}
             </div>
 
