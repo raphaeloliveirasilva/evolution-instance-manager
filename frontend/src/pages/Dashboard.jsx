@@ -4,6 +4,7 @@ import api from '../services/api';
 import SettingsContent from '../components/SettingsContent';
 import Sidebar from '../components/Sidebar';
 import PlanModal from '../components/modals/PlanModal';
+import UserModal from '../components/modals/UserModal';
 
 export default function Dashboard() {
   const [instances, setInstances] = useState([]);
@@ -639,67 +640,16 @@ export default function Dashboard() {
         setNewPlanData={setNewPlanData}
       />
 
-      {/* MODAL USUÁRIO */}
-      {isUserModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-slate-800">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 className="text-2xl font-bold mb-6">
-              {editingUser ? 'Editar usuário' : 'Cadastrar novo usuário'}
-            </h3>
-
-            <form onSubmit={handleSaveUser} className="space-y-4">
-              {/* Grupo Principal: Duas colunas no desktop */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <div className="md:col-span-2">
-                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Nome Completo</label>
-                  <input type="text" placeholder="Ex: João Silva" required className="w-full border p-4 rounded-2xl outline-none focus:border-indigo-500" value={newUserData.name} onChange={e => setNewUserData({ ...newUserData, name: e.target.value })} />
-                </div>
-
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">E-mail</label>
-                  <input type="email" placeholder="joao@email.com" required className="w-full border p-4 rounded-2xl outline-none focus:border-indigo-500" value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })} />
-                </div>
-
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Senha</label>
-                  <input
-                    type="password"
-                    placeholder={editingUser ? "Manter atual" : "Definir senha"}
-                    required={!editingUser}
-                    className="w-full border p-4 rounded-2xl outline-none focus:border-indigo-500"
-                    value={newUserData.password}
-                    onChange={e => setNewUserData({ ...newUserData, password: e.target.value })}
-                  />
-                </div>
-
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Nível de Acesso</label>
-                  <select required className="w-full bg-transparent outline-none text-sm text-slate-700 font-medium" value={newUserData.role} onChange={e => setNewUserData({ ...newUserData, role: e.target.value })}>
-                    <option value="user">Usuário Comum</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">Plano</label>
-                  <select required className="w-full bg-transparent outline-none text-sm text-slate-700 font-medium" value={newUserData.plan_id} onChange={e => setNewUserData({ ...newUserData, plan_id: e.target.value })}>
-                    <option value="">Selecionar...</option>
-                    {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-6">
-                <button type="button" onClick={() => { setIsUserModalOpen(false); setEditingUser(null); }} className="flex-1 text-slate-400 font-bold">Cancelar</button>
-                <button type="submit" className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg">
-                  {editingUser ? 'Salvar Alterações' : 'Criar Conta'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* MODAL USUÁRIO REFATORADO */}
+      <UserModal
+        isOpen={isUserModalOpen}
+        onClose={() => { setIsUserModalOpen(false); setEditingUser(null); }}
+        onSave={handleSaveUser}
+        editingUser={editingUser}
+        newUserData={newUserData}
+        setNewUserData={setNewUserData}
+        plans={plans}
+      />
 
       {/* MODAL QR CODE */}
       {isConnectModalOpen && (
