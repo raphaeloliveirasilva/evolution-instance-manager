@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 import PlanModal from '../components/modals/PlanModal';
 import UserModal from '../components/modals/UserModal';
 import InstanceModal from '../components/modals/InstanceModal';
+import ConnectModal from '../components/modals/ConnectModal';
 
 export default function Dashboard() {
   const [instances, setInstances] = useState([]);
@@ -652,18 +653,17 @@ export default function Dashboard() {
         plans={plans}
       />
 
-      {/* MODAL QR CODE */}
-      {isConnectModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-slate-800">
-          <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-10 text-center shadow-2xl">
-            <h3 className="text-2xl font-bold mb-8">Conectar WhatsApp</h3>
-            <div className="bg-slate-50 p-6 rounded-[2rem] flex items-center justify-center min-h-[250px] border-4 border-dashed border-slate-100">
-              {isQrLoading ? <div className="animate-spin h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full"></div> : <img src={qrCode} alt="QR Code" className="max-w-full rounded-lg" />}
-            </div>
-            <button onClick={() => { setIsConnectModalOpen(false); if (selectedInstance) handleCheckStatus(selectedInstance.id); }} className="mt-8 w-full bg-slate-900 text-white py-4 rounded-2xl font-bold transition-all">Concluir</button>
-          </div>
-        </div>
-      )}
+      {/* MODAL QR CODE REFATORADO */}
+      <ConnectModal
+        isOpen={isConnectModalOpen}
+        onClose={() => {
+          setIsConnectModalOpen(false);
+          if (selectedInstance) handleCheckStatus(selectedInstance.id);
+        }}
+        qrCode={qrCode}
+        isQrLoading={isQrLoading}
+        instanceName={selectedInstance?.name}
+      />
 
       {/* MODAL INSTÂNCIA REFATORADO */}
       <InstanceModal
