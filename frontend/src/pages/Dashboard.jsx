@@ -5,6 +5,7 @@ import SettingsContent from '../components/SettingsContent';
 import Sidebar from '../components/Sidebar';
 import PlanModal from '../components/modals/PlanModal';
 import UserModal from '../components/modals/UserModal';
+import InstanceModal from '../components/modals/InstanceModal';
 
 export default function Dashboard() {
   const [instances, setInstances] = useState([]);
@@ -664,126 +665,18 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* MODAL NOVA INSTANCIA */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-slate-800">
-          <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 className="text-2xl font-bold mb-6">Nova instância</h3>
-
-            <form onSubmit={handleCreateInstance} className="space-y-4">
-              {/* Campo de Nome */}
-              <input
-                autoFocus
-                type="text"
-                placeholder="Nome da instância"
-                required
-                className="w-full border p-4 rounded-2xl outline-none focus:border-indigo-500 transition-all"
-                value={newInstanceName}
-                onChange={e => setNewInstanceName(e.target.value)}
-              />
-
-              {/* Campo de Seleção de Usuário (Apenas para Admins) */}
-              {currentUser?.role === 'admin' && (
-                <div className="relative space-y-2">
-                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-2 block mb-1">
-                    Atribuir ao Usuário
-                  </label>
-
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Pesquisar por nome ou e-mail..."
-                      className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-indigo-500 transition-all text-sm"
-                      value={searchTerm}
-                      onFocus={() => setShowDropdown(true)}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setShowDropdown(true);
-                      }}
-                    />
-
-                    {/* Ícone de Busca ou Seta */}
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </div>
-
-                    {/* DROPDOWN CUSTOMIZADO */}
-                    {showDropdown && (
-                      <div className="absolute z-[60] mt-2 w-full bg-white border border-slate-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in duration-200">
-
-                        {/* Opção Padrão (Admin) */}
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-3 hover:bg-indigo-50 transition-colors border-b border-slate-50"
-                          onClick={() => {
-                            setSelectedOwnerId('');
-                            setSearchTerm('Minha conta (Admin)');
-                            setShowDropdown(false);
-                          }}
-                        >
-                          <p className="text-sm font-bold text-slate-700">minha conta (Admin)</p>
-                        </button>
-
-                        {/* Lista Filtrada */}
-                        {users
-                          .filter(u =>
-                            u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            u.email.toLowerCase().includes(searchTerm.toLowerCase())
-                          )
-                          .map(user => (
-                            <button
-                              key={user.id}
-                              type="button"
-                              className="w-full text-left px-4 py-3 hover:bg-indigo-50 transition-colors border-b border-slate-50 last:border-0"
-                              onClick={() => {
-                                setSelectedOwnerId(user.id);
-                                setSearchTerm(`${user.name} (${user.email})`);
-                                setShowDropdown(false);
-                              }}
-                            >
-                              <p className="text-sm font-bold text-slate-700">{user.name}</p>
-                              <p className="text-xs text-slate-400">{user.email}</p>
-                            </button>
-                          ))}
-
-                        {/* Caso não encontre ninguém */}
-                        {users.filter(u =>
-                          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          u.email.toLowerCase().includes(searchTerm.toLowerCase())
-                        ).length === 0 && searchTerm !== '' && (
-                            <div className="p-4 text-center text-slate-400 text-sm italic">
-                              Nenhum usuário encontrado...
-                            </div>
-                          )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsModalOpen(false); // fecha o modal
-                    setSearchTerm(''); // limpa a busca
-                    setShowDropdown(false); // fecha o dropdown
-                  }}
-                  className="flex-1 text-slate-400 font-bold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition-all"
-                >
-                  Criar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* MODAL INSTÂNCIA REFATORADO */}
+      <InstanceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleCreateInstance}
+        newInstanceName={newInstanceName}
+        setNewInstanceName={setNewInstanceName}
+        selectedOwnerId={selectedOwnerId}
+        setSelectedOwnerId={setSelectedOwnerId}
+        users={users}
+        currentUser={currentUser}
+      />
 
 
     </div>
