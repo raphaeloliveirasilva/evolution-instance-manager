@@ -4,11 +4,11 @@ import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import InstanceDetails from './pages/InstanceDetails';
+import MainLayout from './layouts/MainLayout'; // Importe o Layout criado
 
 // Função simples para verificar se o usuário está logado
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('@manager:token');
-  // Se não tiver token, manda de volta para o login
   return token ? children : <Navigate to="/" />;
 };
 
@@ -20,37 +20,24 @@ function App() {
         reverseOrder={false}
         toastOptions={{
           duration: 4000,
-          style: {
-            background: '#fff',
-            color: '#333',
-          },
+          style: { background: '#fff', color: '#333' },
         }}
       />
       <Routes>
         {/* Rota Pública: Login */}
         <Route path="/" element={<Login />} />
 
-        {/* --- ROTAS PRIVADAS --- */}
-        
-        {/* Dashboard Principal */}
-        <Route 
-          path="/dashboard" 
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          } 
-        />
-
-        {/* Detalhes da Instância */}
-        <Route 
-          path="/instances/:id" 
-          element={
-            <PrivateRoute>
-              <InstanceDetails />
-            </PrivateRoute>
-          } 
-        />
+        {/* --- ROTAS PRIVADAS COM LAYOUT --- */}
+        {/* Envolvemos o MainLayout com o PrivateRoute */}
+        <Route element={
+          <PrivateRoute>
+            <MainLayout />
+          </PrivateRoute>
+        }>
+            {/* Estas rotas serão renderizadas dentro do <Outlet /> do MainLayout */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/instances/:id" element={<InstanceDetails />} />
+        </Route>
 
         {/* Redireciona qualquer rota inexistente para o Login */}
         <Route path="*" element={<Navigate to="/" />} />

@@ -1,5 +1,4 @@
 // src/components/instance/GeneralSettings.jsx
-import React from 'react';
 
 function ConfigRow({ title, description, enabled, onChange }) {
   return (
@@ -21,6 +20,7 @@ function ConfigRow({ title, description, enabled, onChange }) {
 export default function GeneralSettings({ settings, onToggle, onUpdateMsg, onSave }) {
   return (
     <section className="animate-in fade-in duration-500">
+      {/* Título e Botão de Ação Local */}
       <div className="flex justify-between items-center mb-10">
         <div>
           <h3 className="text-2xl font-bold text-slate-900">Configurações Gerais</h3>
@@ -34,6 +34,7 @@ export default function GeneralSettings({ settings, onToggle, onUpdateMsg, onSav
         </button>
       </div>
       
+      {/* Lista de Configurações */}
       <div className="divide-y divide-slate-100">
         <ConfigRow 
           title="Rejeitar Chamadas"
@@ -43,11 +44,14 @@ export default function GeneralSettings({ settings, onToggle, onUpdateMsg, onSav
         />
 
         {settings.rejectCall && (
-          <div className="py-6 px-4 bg-slate-50/50 rounded-2xl my-2">
-            <label className="block text-xs font-bold text-indigo-500 mb-2 ml-1">Mensagem de rejeição automática</label>
+          <div className="py-6 px-4 bg-slate-50/50 rounded-2xl my-2 border border-slate-100 animate-in slide-in-from-top-2 duration-300">
+            <label className="block text-xs font-bold text-indigo-500 mb-2 ml-1 uppercase tracking-wider">
+              Mensagem de rejeição automática
+            </label>
             <input 
               type="text"
-              className="w-full bg-white p-4 rounded-xl border border-slate-200 outline-none text-sm"
+              placeholder="Digite a mensagem..."
+              className="w-full bg-white p-4 rounded-xl border border-slate-200 outline-none focus:border-indigo-500 transition-all text-sm shadow-sm"
               value={settings.msgCall || ""}
               onChange={(e) => onUpdateMsg(e.target.value)}
             />
