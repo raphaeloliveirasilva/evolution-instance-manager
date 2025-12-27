@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import SettingsContent from '../components/SettingsContent';
 import Sidebar from '../components/Sidebar';
+import PlanModal from '../components/modals/PlanModal';
 
 export default function Dashboard() {
   const [instances, setInstances] = useState([]);
@@ -628,32 +629,15 @@ export default function Dashboard() {
 
       </main>
 
-      {/* MODAL PLANO */}
-      {isPlanModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-slate-800">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 className="text-2xl font-bold mb-6">{editingPlan ? 'Editar plano' : 'Criar novo plano'}</h3>
-            <form onSubmit={handleSavePlan} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Nome</label>
-                <input type="text" required className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-indigo-500" value={newPlanData.name} onChange={e => setNewPlanData({ ...newPlanData, name: e.target.value })} />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Limite de Instâncias</label>
-                <input type="number" required className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-indigo-500" value={newPlanData.max_instances} onChange={e => setNewPlanData({ ...newPlanData, max_instances: e.target.value })} />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Preço Mensal (R$)</label>
-                <input type="number" step="0.01" required className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-indigo-500" value={newPlanData.price} onChange={e => setNewPlanData({ ...newPlanData, price: e.target.value })} />
-              </div>
-              <div className="flex gap-3 pt-6">
-                <button type="button" onClick={() => { setIsPlanModalOpen(false); setEditingPlan(null); }} className="flex-1 text-slate-400 font-bold">Cancelar</button>
-                <button type="submit" className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg">{editingPlan ? 'Atualizar' : 'Salvar Plano'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* MODAL PLANO REFATORADO */}
+      <PlanModal
+        isOpen={isPlanModalOpen}
+        onClose={() => { setIsPlanModalOpen(false); setEditingPlan(null); }}
+        onSave={handleSavePlan}
+        editingPlan={editingPlan}
+        newPlanData={newPlanData}
+        setNewPlanData={setNewPlanData}
+      />
 
       {/* MODAL USUÁRIO */}
       {isUserModalOpen && (
